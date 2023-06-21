@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rich_clipboard/rich_clipboard.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'resource.dart';
 
 void main() async {
   runApp(const MyApp());
@@ -57,29 +58,64 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<dynamic> clipboards = [];
+
   final TextEditingController _controller = TextEditingController();
   final _channel = WebSocketChannel.connect(
-    Uri.parse('ws://13.229.126.140:3000/ws/uniclips'),
+    Uri.parse(
+        'ws://13.229.126.140:3000/ws/clipboard?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTg4ODU3MDUsInVzZXJJZCI6IjI4Y2YzZmRjLTk1NWMtNDc0YS04OTg1LTNjMWNjMmRjNjcxZiIsInVzZXJuYW1lIjoiZGlvIn0.BLJ9Vndl-TpNVqew8bwRa8uksyEBR04yeeli5kPmlOI'),
   );
+
+  buildClipboard() async {
+    var data = await getClipboard();
+    setState(() {
+      clipboards = data;
+    });
+  }
+
+  addClipboard(String text) {
+    setState(() {
+      clipboards = [text, ...clipboards];
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    buildClipboard();
+
+    _channel.stream.listen((message) {
+      addClipboard(message);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final ButtonStyle style =
         ElevatedButton.styleFrom(textStyle: const TextStyle(fontSize: 20));
+
+    List<Widget> clipboardWidgets = [];
+    if (clipboards.isNotEmpty) {
+      for (var i = 0; i < clipboards.length; i++) {
+        clipboardWidgets.add(Container(
+          padding: const EdgeInsets.all(8),
+          color: Colors.teal[100],
+          child: Text(clipboards[i]),
+        ));
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
+          child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ElevatedButton(
-              style: style,
-              onPressed: () {},
-              child: const Text('Enabled'),
-            ),
             Form(
               child: TextFormField(
                 controller: _controller,
@@ -87,14 +123,14 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             const SizedBox(height: 24),
-            StreamBuilder(
+            /* StreamBuilder(
               stream: _channel.stream,
               builder: (context, snapshot) {
                 final data = snapshot.hasData ? '${snapshot.data}' : '';
                 RichClipboard.setData(RichClipboardData(text: data));
                 return Text(data);
               },
-            ),
+            ), */
             TextButton(
               style: TextButton.styleFrom(
                 textStyle: const TextStyle(fontSize: 20),
@@ -105,9 +141,19 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: const Text('Enabled'),
             ),
+            GridView.count(
+              primary: false,
+              padding: const EdgeInsets.all(20),
+              crossAxisCount: 2,
+              crossAxisSpacing: 2.0,
+              mainAxisSpacing: 2.0,
+              shrinkWrap: true,
+              scrollDirection: Axis.vertical,
+              children: clipboardWidgets,
+            )
           ],
         ),
-      ),
+      )),
       floatingActionButton: FloatingActionButton(
         onPressed: _sendMessage,
         tooltip: 'Send message',
@@ -116,7 +162,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _sendMessage() {
+  void _sendMessage() async {
     if (_controller.text.isNotEmpty) {
       print(_controller.text);
       _channel.sink.add(_controller.text);
