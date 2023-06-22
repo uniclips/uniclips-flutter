@@ -101,7 +101,13 @@ class _MyHomePageState extends State<MyHomePage> {
         clipboardWidgets.add(Container(
           padding: const EdgeInsets.all(8),
           color: Colors.teal[100],
-          child: Text(clipboards[i]),
+          child: TextButton(
+              onPressed: () async {
+                await RichClipboard.setData(RichClipboardData(
+                  text: clipboards[i],
+                ));
+              },
+              child: Text(clipboards[i])),
         ));
       }
     }
@@ -136,10 +142,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 textStyle: const TextStyle(fontSize: 20),
               ),
               onPressed: () async {
-                await RichClipboard.setData(
-                    const RichClipboardData(text: "plainText"));
+                final clipboardData = await RichClipboard.getData();
+                if (clipboardData.html != null) {
+                  // Do something with HTML
+                } else if (clipboardData.text != null) {
+                  _channel.sink.add(clipboardData.text);
+                }
               },
-              child: const Text('Enabled'),
+              child: const Text('Paste from Clipboard'),
             ),
             GridView.count(
               primary: false,
