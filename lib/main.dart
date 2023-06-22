@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Universal Clipboard'),
     );
   }
 }
@@ -60,7 +60,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<dynamic> clipboards = [];
 
-  final TextEditingController _controller = TextEditingController();
   final _channel = WebSocketChannel.connect(
     Uri.parse(
         'ws://13.229.126.140:3000/ws/clipboard?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTg4ODU3MDUsInVzZXJJZCI6IjI4Y2YzZmRjLTk1NWMtNDc0YS04OTg1LTNjMWNjMmRjNjcxZiIsInVzZXJuYW1lIjoiZGlvIn0.BLJ9Vndl-TpNVqew8bwRa8uksyEBR04yeeli5kPmlOI'),
@@ -122,35 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Form(
-              child: TextFormField(
-                controller: _controller,
-                decoration: const InputDecoration(labelText: 'Send a message'),
-              ),
-            ),
             const SizedBox(height: 24),
-            /* StreamBuilder(
-              stream: _channel.stream,
-              builder: (context, snapshot) {
-                final data = snapshot.hasData ? '${snapshot.data}' : '';
-                RichClipboard.setData(RichClipboardData(text: data));
-                return Text(data);
-              },
-            ), */
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: const TextStyle(fontSize: 20),
-              ),
-              onPressed: () async {
-                final clipboardData = await RichClipboard.getData();
-                if (clipboardData.html != null) {
-                  // Do something with HTML
-                } else if (clipboardData.text != null) {
-                  _channel.sink.add(clipboardData.text);
-                }
-              },
-              child: const Text('Paste from Clipboard'),
-            ),
             GridView.count(
               primary: false,
               padding: const EdgeInsets.all(20),
@@ -165,24 +136,25 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       )),
       floatingActionButton: FloatingActionButton(
-        onPressed: _sendMessage,
-        tooltip: 'Send message',
-        child: const Icon(Icons.send),
+        onPressed: _pasteFromClipboard,
+        tooltip: 'Paste From Clipboard',
+        child: const Icon(Icons.content_paste),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 
-  void _sendMessage() async {
-    if (_controller.text.isNotEmpty) {
-      print(_controller.text);
-      _channel.sink.add(_controller.text);
+  void _pasteFromClipboard() async {
+    final clipboardData = await RichClipboard.getData();
+    if (clipboardData.html != null) {
+      // Do something with HTML
+    } else if (clipboardData.text != null) {
+      _channel.sink.add(clipboardData.text);
     }
   }
 
   @override
   void dispose() {
     _channel.sink.close();
-    _controller.dispose();
     super.dispose();
   }
 }
