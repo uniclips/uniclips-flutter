@@ -58,3 +58,18 @@ Future<AuthData> login(String username, String password) async {
 
   return data;
 }
+
+Future<AuthData> loginGoogle(String email, String name, String googleId) async {
+  final response = await http.post(
+      Uri.parse('http://13.229.126.140:3000/auth/login_google'),
+      body: {"email": email, "name": name, "googleId": googleId});
+
+  if (response.statusCode != 200) {
+    throw Exception("Invalid username or password");
+  }
+
+  final Response resp = Response.fromJson(json.decode(response.body));
+  final AuthData data = AuthData.fromJson(resp.data);
+
+  return data;
+}

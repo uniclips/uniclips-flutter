@@ -52,20 +52,20 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void initWebSocket() async {
-    var _token = await _getToken();
-    print("token: $_token");
-    if (_token == null) {
+    var token = await _getToken();
+    print("token: $token");
+    if (token == null) {
       Navigator.pushNamed(context, '/login');
       return;
     }
     _channel = WebSocketChannel.connect(
-      Uri.parse('ws://13.229.126.140:3000/ws/clipboard?token=$_token'),
+      Uri.parse('ws://13.229.126.140:3000/ws/clipboard?token=$token'),
     );
     _channel?.stream.listen((message) {
       addClipboard(message);
     });
 
-    var data = await getClipboard(_token);
+    var data = await getClipboard(token);
     print("data: $data.toString()");
     setState(() {
       clipboards = data;

@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:uniclip_mobile/resource.dart';
+
+final GoogleSignIn _googleSignIn = GoogleSignIn(
+  scopes: [
+    'email',
+    'https://www.googleapis.com/auth/contacts.readonly',
+  ],
+);
 
 class LoginRoute extends StatefulWidget {
   const LoginRoute({super.key, required this.title});
@@ -24,7 +32,8 @@ class _LoginRouteState extends State<LoginRoute> {
   final nameController = TextEditingController();
   final passwordController = TextEditingController();
   final _storage = const FlutterSecureStorage();
-
+  final _formKey = GlobalKey<FormState>();
+  GoogleSignInAccount? _currentUser;
   @override
   void dispose() {
     // Clean up the controller when the widget is removed from the
@@ -35,14 +44,36 @@ class _LoginRouteState extends State<LoginRoute> {
   }
 
   @override
+  void initState() {
+    _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
+      setState(() {
+        _currentUser = account;
+      });
+    });
+    _googleSignIn.signInSilently();
+
+    super.initState();
+  }
+
+  Future<void> _handleSignIn() async {
+    try {
+      await _googleSignIn.signIn();
+    } catch (error) {
+      print(error);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login godul'),
+        automaticallyImplyLeading: false,
       ),
       body: Container(
         padding: const EdgeInsets.all(20),
         child: (Form(
+          key: _formKey,
           child: Column(children: [
             TextFormField(
               controller: nameController,
@@ -69,9 +100,11 @@ class _LoginRouteState extends State<LoginRoute> {
             const SizedBox(height: 24),
             TextFormField(
               controller: passwordController,
+              obscureText: true,
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
                 labelText: 'Password',
+
                 // The MaterialStateProperty's value is a text style that is orange
                 // by default, but the theme's error color if the input decorator
                 // is in its error state.
@@ -95,29 +128,46 @@ class _LoginRouteState extends State<LoginRoute> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () async {
-                try {
-                  var data =
-                      await login(nameController.text, passwordController.text);
-                  _storage.write(key: 'token', value: data.token);
-                  Navigator.pushNamed(context, '/');
-                } catch (e) {
-                  final snackBar = SnackBar(
-                    content: const Text('Yay! A SnackBar!'),
-                    action: SnackBarAction(
-                      label: 'Undo',
-                      onPressed: () {
-                        // Some code to undo the change.
-                      },
-                    ),
+                if (_formKey.currentState!.validate()) {
+                  // If the form is valid, display a snackbar. In the real world,
+                  // you'd often call a server or save the information in a database.
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Processing Data')),
                   );
+                  try {
+                    var data = await login(
+                        nameController.text, passwordController.text);
+                    await _storage.write(key: 'token', value: data.token);
+                    Navigator.pushNamed(context, '/');
+                  } catch (e) {
+                    final snackBar = SnackBar(
+                      content: const Text('Error from backend'),
+                      action: SnackBarAction(
+                        label: 'Close',
+                        onPressed: () {
+                          // Some code to undo the change.
+                        },
+                      ),
+                    );
 
-                  // Find the ScaffoldMessenger in the widget tree
-                  // and use it to show a SnackBar.
-                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    // Find the ScaffoldMessenger in the widget tree
+                    // and use it to show a SnackBar.
+                    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Form is invalid')),
+                  );
                 }
               },
               child: const Text('Login'),
             ),
+            const SizedBox(height: 24),
+            TextButton(
+                onPressed: () async {
+                  await _handleSignIn();
+                },
+                child: Text('Login with google'))
           ]),
         )),
       ),
