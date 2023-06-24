@@ -40,6 +40,12 @@ class _MyHomePageState extends State<MyHomePage> {
   buildClipboard() async {}
 
   addClipboard(String text) {
+    if (clipboards.isEmpty) {
+      setState(() {
+        clipboards = [text];
+      });
+      return;
+    }
     setState(() {
       clipboards = [text, ...clipboards];
     });
