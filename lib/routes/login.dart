@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:uniclip_mobile/resource.dart';
 
 class LoginRoute extends StatefulWidget {
@@ -22,6 +23,7 @@ class LoginRoute extends StatefulWidget {
 class _LoginRouteState extends State<LoginRoute> {
   final nameController = TextEditingController();
   final passwordController = TextEditingController();
+  final _storage = const FlutterSecureStorage();
 
   @override
   void dispose() {
@@ -94,7 +96,10 @@ class _LoginRouteState extends State<LoginRoute> {
             ElevatedButton(
               onPressed: () async {
                 try {
-                  await login(nameController.text, passwordController.text);
+                  var data =
+                      await login(nameController.text, passwordController.text);
+                  _storage.write(key: 'token', value: data.token);
+                  Navigator.pushNamed(context, '/');
                 } catch (e) {
                   final snackBar = SnackBar(
                     content: const Text('Yay! A SnackBar!'),

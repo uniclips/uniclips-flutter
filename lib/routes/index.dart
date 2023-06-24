@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:rich_clipboard/rich_clipboard.dart';
 import 'package:uniclip_mobile/resource.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -23,18 +24,20 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<dynamic> clipboards = [];
+  final _storage = const FlutterSecureStorage();
 
-  final _channel = WebSocketChannel.connect(
-    Uri.parse(
-        'ws://13.229.126.140:3000/ws/clipboard?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTg4ODU3MDUsInVzZXJJZCI6IjI4Y2YzZmRjLTk1NWMtNDc0YS04OTg1LTNjMWNjMmRjNjcxZiIsInVzZXJuYW1lIjoiZGlvIn0.BLJ9Vndl-TpNVqew8bwRa8uksyEBR04yeeli5kPmlOI'),
-  );
-
-  buildClipboard() async {
-    var data = await getClipboard();
-    setState(() {
-      clipboards = data;
-    });
+  Future<String?> _getToken() async {
+    var token = await _storage.read(key: 'token');
+    return token;
   }
+
+  void _removeToken() async {
+    await _storage.delete(key: 'token');
+  }
+
+  WebSocketChannel? _channel;
+
+  buildClipboard() async {}
 
   addClipboard(String text) {
     setState(() {
@@ -42,15 +45,32 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void initWebSocket() async {
+    var _token = await _getToken();
+    print("token: $_token");
+    if (_token == null) {
+      Navigator.pushNamed(context, '/login');
+      return;
+    }
+    _channel = WebSocketChannel.connect(
+      Uri.parse('ws://13.229.126.140:3000/ws/clipboard?token=$_token'),
+    );
+    _channel?.stream.listen((message) {
+      addClipboard(message);
+    });
+
+    var data = await getClipboard(_token);
+    print("data: $data.toString()");
+    setState(() {
+      clipboards = data;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
 
-    buildClipboard();
-
-    _channel.stream.listen((message) {
-      addClipboard(message);
-    });
+    initWebSocket();
   }
 
   @override
@@ -83,7 +103,10 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/login'),
+              onPressed: () {
+                _removeToken();
+                Navigator.pushNamed(context, '/login');
+              },
               child: const Text('Ganti'),
             ),
             const SizedBox(height: 24),
@@ -113,13 +136,13 @@ class _MyHomePageState extends State<MyHomePage> {
     if (clipboardData.html != null) {
       // Do something with HTML
     } else if (clipboardData.text != null) {
-      _channel.sink.add(clipboardData.text);
+      _channel?.sink.add(clipboardData.text);
     }
   }
 
   @override
   void dispose() {
-    _channel.sink.close();
+    _channel?.sink.close();
     super.dispose();
   }
 }
