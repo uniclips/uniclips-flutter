@@ -33,7 +33,6 @@ class _LoginRouteState extends State<LoginRoute> {
   final passwordController = TextEditingController();
   final _storage = const FlutterSecureStorage();
   final _formKey = GlobalKey<FormState>();
-  GoogleSignInAccount? _currentUser;
   @override
   void dispose() {
     // Clean up the controller when the widget is removed from the
@@ -46,10 +45,15 @@ class _LoginRouteState extends State<LoginRoute> {
   @override
   void initState() {
     _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
-      setState(() {
-        _currentUser = account;
-      });
+      print(account?.email);
+      print(account?.id);
+      print(account?.displayName);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Processing Data')),
+    );
     });
+
     _googleSignIn.signInSilently();
 
     super.initState();
@@ -59,7 +63,8 @@ class _LoginRouteState extends State<LoginRoute> {
     try {
       await _googleSignIn.signIn();
     } catch (error) {
-      print(error);
+      print("ERRROOOOOOOOR");
+      print(error.toString());
     }
   }
 
@@ -167,7 +172,7 @@ class _LoginRouteState extends State<LoginRoute> {
                 onPressed: () async {
                   await _handleSignIn();
                 },
-                child: Text('Login with google'))
+                child: const Text('Login with google'))
           ]),
         )),
       ),
