@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rich_clipboard/rich_clipboard.dart';
 import 'package:uniclip_mobile/resource.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+
+final GoogleSignIn _googleSignIn = GoogleSignIn(
+  scopes: [
+    'email',
+    'https://www.googleapis.com/auth/contacts.readonly',
+  ],
+);
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -110,10 +118,11 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             TextButton(
               onPressed: () {
+                _googleSignIn.disconnect();
                 _removeToken();
                 Navigator.pushNamed(context, '/login');
               },
-              child: const Text('Ganti'),
+              child: const Text('Logout'),
             ),
             const SizedBox(height: 24),
             GridView.count(

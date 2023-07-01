@@ -1,4 +1,4 @@
-package com.example.uniclip_mobile
+package app.uniclips.clipboard
 
 import io.flutter.embedding.android.FlutterActivity
 

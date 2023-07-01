@@ -44,22 +44,39 @@ class _LoginRouteState extends State<LoginRoute> {
 
   @override
   void initState() {
-    _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
+    _googleSignIn.onCurrentUserChanged
+        .listen((GoogleSignInAccount? account) async {
       print(account?.email);
       print(account?.id);
       print(account?.displayName);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Processing Data')),
-    );
+      _handleLogin(account);
     });
-
     _googleSignIn.signInSilently();
 
     super.initState();
   }
 
-  Future<void> _handleSignIn() async {
+  void _handleLogin(GoogleSignInAccount? account) async {
+    print('godul google login');
+    try {
+      if (account != null) {
+        var data = await loginGoogle(
+            account.email, account.displayName ?? '', account.id);
+        await _storage.write(key: 'token', value: data.token);
+        Navigator.pushNamed(context, '/');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Processing Data')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error Data')),
+      );
+    }
+  }
+
+  Future<void> _handleGoogleSignIn() async {
     try {
       await _googleSignIn.signIn();
     } catch (error) {
@@ -170,7 +187,7 @@ class _LoginRouteState extends State<LoginRoute> {
             const SizedBox(height: 24),
             TextButton(
                 onPressed: () async {
-                  await _handleSignIn();
+                  await _handleGoogleSignIn();
                 },
                 child: const Text('Login with google'))
           ]),
