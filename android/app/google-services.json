@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "957074474182-5krbpa0jjoc276qhhvihlo3krm7krff5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.uniclips.clipboard",
+            "certificate_hash": "b65a689a0b96455fcf21745bf5399a261fdda08d"
+          }
+        },
+        {
           "client_id": "957074474182-q9fi0fm9m53q0v27iugnejko41q78b5s.apps.googleusercontent.com",
           "client_type": 3
         }

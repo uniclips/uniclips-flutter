@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:uniclip_mobile/resource.dart';
+import 'package:flutter_web_auth/flutter_web_auth.dart';
 
 final GoogleSignIn _googleSignIn = GoogleSignIn(
   scopes: [
@@ -44,6 +45,8 @@ class _LoginRouteState extends State<LoginRoute> {
 
   @override
   void initState() {
+
+
     _googleSignIn.onCurrentUserChanged
         .listen((GoogleSignInAccount? account) async {
       print(account?.email);
@@ -75,6 +78,7 @@ class _LoginRouteState extends State<LoginRoute> {
       );
     }
   }
+  
 
   Future<void> _handleGoogleSignIn() async {
     try {
@@ -83,6 +87,10 @@ class _LoginRouteState extends State<LoginRoute> {
       print("ERRROOOOOOOOR");
       print(error.toString());
     }
+  }
+
+  Future<void> _handleWebGoogleSignIn() async {
+    final result = await FlutterWebAuth.authenticate(url: url.toString(), callbackUrlScheme: callbackUrlScheme);
   }
 
   @override
