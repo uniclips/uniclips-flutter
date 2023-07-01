@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "957074474182",
+    "project_id": "uniclip-196d5",
+    "storage_bucket": "uniclip-196d5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:957074474182:android:b0eff72eaa7fa64bad83c7",
+        "android_client_info": {
+          "package_name": "app.uniclips.clipboard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "957074474182-q9fi0fm9m53q0v27iugnejko41q78b5s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8ijAcy3k0HS63azTu1ANF1734sIseHMY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "957074474182-q9fi0fm9m53q0v27iugnejko41q78b5s.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "957074474182-1ujiknaq4tl0lo1nbndk5q69qbugqr1a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "app.uniclips.clipboard"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
