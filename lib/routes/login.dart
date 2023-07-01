@@ -89,10 +89,6 @@ class _LoginRouteState extends State<LoginRoute> {
     }
   }
 
-  Future<void> _handleWebGoogleSignIn() async {
-    final result = await FlutterWebAuth.authenticate(url: url.toString(), callbackUrlScheme: callbackUrlScheme);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
